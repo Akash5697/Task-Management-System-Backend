@@ -5,6 +5,7 @@ const { connectDB } = require('./config/db');
 
 const authRoutes = require('./routes/auth');
 const protectedRoutes = require('./routes/protected');
+const tasksRoutes = require('./routes/tasks');
 
 const app = express();
 app.use(cors());
@@ -15,6 +16,7 @@ async function start() {
 		await connectDB();
 		app.use('/api/auth', authRoutes);
 		app.use('/api', protectedRoutes);
+		app.use('/api/tasks', tasksRoutes);
 		const PORT = process.env.PORT || 4000;
 		app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 	} catch (err) {
