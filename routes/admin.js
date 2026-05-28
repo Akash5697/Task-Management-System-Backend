@@ -7,6 +7,7 @@ const adminController = require('../controllers/adminController');
 router.use(auth, authorizeRoles('Admin'));
 
 router.get('/users', adminController.listUsers);
+router.get('/task-statistics', adminController.taskStatistics);
 router.post('/users', adminController.createUser);
 router.patch('/users/:id/role', adminController.changeUserRole);
 router.delete('/users/:id', adminController.removeUser);
