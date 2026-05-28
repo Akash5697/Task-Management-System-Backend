@@ -5,9 +5,12 @@ const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret';
 
 async function registerUser({ name, email, password, role }) {
   if (!name || !email || !password) throw { status: 400, message: 'Missing fields' };
+  if (role && role !== 'Employee') {
+    throw { status: 403, message: 'Public registration can only create Employee users' };
+  }
   const existing = await User.findOne({ email });
   if (existing) throw { status: 400, message: 'User already exists' };
-  const user = await User.create({ name, email, password, role });
+  const user = await User.create({ name, email, password, role: 'Employee' });
   const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
   return { token, user: { id: user._id, name: user.name, email: user.email, role: user.role } };
 }
