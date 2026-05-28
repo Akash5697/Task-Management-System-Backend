@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Task = require('../models/Task');
 
 const ALLOWED_ADMIN_ROLES = ['Employee', 'Manager'];
 const ALLOWED_ROLE_UPDATES = ['Employee', 'Manager', 'Admin'];
@@ -45,9 +46,41 @@ async function deleteUser(userId, currentUserId) {
   await User.deleteOne({ _id: userId });
 }
 
+async function getTaskStatistics() {
+  const [totalTasks, assignedTasks, pendingTasks, inProgressTasks, completedTasks, cancelledTasks, lowPriorityTasks, mediumPriorityTasks, highPriorityTasks] = await Promise.all([
+    Task.countDocuments(),
+    Task.countDocuments({ assignedEmployee: { $ne: null } }),
+    Task.countDocuments({ status: 'Pending' }),
+    Task.countDocuments({ status: 'In Progress' }),
+    Task.countDocuments({ status: 'Completed' }),
+    Task.countDocuments({ status: 'Cancelled' }),
+    Task.countDocuments({ priority: 'Low' }),
+    Task.countDocuments({ priority: 'Medium' }),
+    Task.countDocuments({ priority: 'High' }),
+  ]);
+
+  return {
+    totalTasks,
+    assignedTasks,
+    unassignedTasks: totalTasks - assignedTasks,
+    byStatus: {
+      pendingTasks,
+      inProgressTasks,
+      completedTasks,
+      cancelledTasks,
+    },
+    byPriority: {
+      lowPriorityTasks,
+      mediumPriorityTasks,
+      highPriorityTasks,
+    },
+  };
+}
+
 module.exports = {
   getAllUsers,
   createUser,
   updateUserRole,
   deleteUser,
+  getTaskStatistics,
 };

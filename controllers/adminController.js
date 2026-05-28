@@ -43,9 +43,20 @@ async function removeUser(req, res) {
   }
 }
 
+async function taskStatistics(req, res) {
+  try {
+    const stats = await adminService.getTaskStatistics();
+    res.json(stats);
+  } catch (e) {
+    console.error(e);
+    res.status(e.status || 500).json({ message: e.message || 'Server error' });
+  }
+}
+
 module.exports = {
   listUsers,
   createUser,
   changeUserRole,
   removeUser,
+  taskStatistics,
 };
