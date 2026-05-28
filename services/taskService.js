@@ -87,7 +87,7 @@ async function deleteTask(id, user) {
   if (user.role !== 'Admin' && String(task.createdBy) !== String(user._id)) {
     throw { status: 403, message: 'Forbidden' };
   }
-  await task.remove();
+  await Task.deleteOne({ _id: id });
   return;
 }
 
