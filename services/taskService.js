@@ -33,6 +33,10 @@ async function getAssignedTasksForManager(managerId) {
   return Task.find({ createdBy: managerId, assignedEmployee: { $ne: null } }).populate('assignedEmployee createdBy');
 }
 
+async function getAssignedTasksForEmployee(employeeId) {
+  return Task.find({ assignedEmployee: employeeId }).populate('assignedEmployee createdBy');
+}
+
 async function getTaskById(id) {
   const task = await Task.findById(id).populate('assignedEmployee createdBy');
   if (!task) throw { status: 404, message: 'Task not found' };
@@ -55,6 +59,24 @@ async function updateTask(id, data, user) {
   }
 
   Object.assign(task, data);
+  await task.save();
+  return task.populate('assignedEmployee createdBy');
+}
+
+async function updateTaskStatusForEmployee(id, status, user) {
+  const allowedStatuses = ['Pending', 'In Progress', 'Completed'];
+  if (!allowedStatuses.includes(status)) {
+    throw { status: 400, message: 'Invalid status' };
+  }
+
+  const task = await Task.findById(id);
+  if (!task) throw { status: 404, message: 'Task not found' };
+
+  if (String(task.assignedEmployee) !== String(user._id)) {
+    throw { status: 403, message: 'Forbidden' };
+  }
+
+  task.status = status;
   await task.save();
   return task.populate('assignedEmployee createdBy');
 }
@@ -87,4 +109,14 @@ async function assignTask(id, employeeId, user) {
   return task.populate('assignedEmployee createdBy');
 }
 
-module.exports = { createTask, getTasksForUser, getAssignedTasksForManager, getTaskById, updateTask, deleteTask, assignTask };
+module.exports = {
+  createTask,
+  getTasksForUser,
+  getAssignedTasksForManager,
+  getAssignedTasksForEmployee,
+  getTaskById,
+  updateTask,
+  updateTaskStatusForEmployee,
+  deleteTask,
+  assignTask,
+};
